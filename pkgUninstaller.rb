@@ -26,8 +26,8 @@ require "shell"
 # -h , --help コマンド一覧を出力する。引数が空の場合も出力する
 
 #フラグ用(ここで書かないとあとでnil)
-$noopflag = false
-$quietflag = false
+$noop = false
+$quiet = false
 
 OptionParser.new do |parser|
 	#引数で受け取ったpkgIDを格納
@@ -37,10 +37,10 @@ OptionParser.new do |parser|
 	parser.on("-s" , "--serach KEYWORD" , "Serach pkg."){|v| $keyword = v; $serach = true }
 
 	#no operationフラグを立てる
-	parser.on("-n" , "--noop" , "No operation mode."){|v| $noopflag = v }
+	parser.on("-n" , "--noop" , "No operation mode."){|v| $noop = v }
 
 	#quietフラグを立てる
-	parser.on("-q" , "--quiet" , "Quiet mode."){|v| $quietflag = v }
+	parser.on("-q" , "--quiet" , "Quiet mode."){|v| $quiet = v }
 
 	#コマンド一覧を出力して終了
 	#parser.on("-h" , "--help" , "Show this message."){puts parser; exit}
@@ -107,21 +107,21 @@ if $unlink == true
 
 	#ファイルの削除を行う
 	for delete_file_name in pkg_file_path
-		FileUtils.remove( pkg_path + delete_file_name , {:noop => $noopflag} )
-		puts "delete #{pkg_path + delete_file_name}" unless $quietflag
+		FileUtils.remove( pkg_path + delete_file_name , {:noop => $noop} )
+		puts "delete #{pkg_path + delete_file_name}" unless $quiet
 		file_deleted += 1
 	end
 
 	#ディレクトリの削除を行う(空ディレクトリのみ)
 	for delete_dir_name in pkg_dir_path
 		begin
-			FileUtils.rmdir( pkg_path + delete_dir_name , {:noop => $noopflag} )
-			puts "delete #{pkg_path + delete_dir_name}" unless $quietflag
+			FileUtils.rmdir( pkg_path + delete_dir_name , {:noop => $noop} )
+			puts "delete #{pkg_path + delete_dir_name}" unless $quiet
 			dir_deleted += 1
 			
 			if Dir.entries(pkg_path + delete_dir_name).size > 2
 				#noopが指定されているときはErrono::ENOTEMPTYが呼び出されないため空かどうかがわからない
-				puts "#{pkg_path + delete_dir_name} is not empty." unless $quietflag
+				puts "#{pkg_path + delete_dir_name} is not empty." unless $quiet
 			end
 
 		rescue Errno::ENOTEMPTY => e
@@ -138,7 +138,7 @@ if $unlink == true
 	end
 
 	#pkgの情報を削除
-	unless $noopflag
+	unless $noop
 		sh.system("pkgutil","--forget","#{$pkgid}")
 		sh.check_point()
 	end
