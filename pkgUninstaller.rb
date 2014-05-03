@@ -1,5 +1,5 @@
 # pkgUninstaller -OS X app uninstaller-
-#     Copyright (C) 2014  Nakamura Yusuke
+#     Copyright (C) 2014  Yusuke Nakamura
 
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
