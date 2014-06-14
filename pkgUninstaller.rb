@@ -21,7 +21,7 @@ require "shell"
 #引数
 # -n , --noop 実際のファイル削除は行わず、操作対象のファイルを出力する
 # -u , --unlink pkgID 指定されたpkgを削除する
-# -s , --serach keyword keywordで検索を行い、検索結果から削除するか否か問う
+# -s , --search keyword keywordで検索を行い、検索結果から削除するか否か問う
 # -q , --quiet 削除されたファイルとディレクトリの数のみ出力
 # -h , --help コマンド一覧を出力する。引数が空の場合も出力する
 
@@ -34,7 +34,7 @@ OptionParser.new do |parser|
 	parser.on("-u" , "--unlink PKGID" , "Unlink PKGID."){|v| $pkgid = v; $unlink = true }
 
 	#引数で受け取ったキーワードを格納
-	parser.on("-s" , "--serach KEYWORD" , "Serach pkg."){|v| $keyword = v; $serach = true }
+	parser.on("-s" , "--search KEYWORD" , "Search pkg."){|v| $keyword = v; $search = true }
 
 	#no operationフラグを立てる
 	parser.on("-n" , "--noop" , "No operation mode."){|v| $noop = v }
@@ -148,7 +148,7 @@ if $unlink == true
 end
 
 ###検索###
-if $serach == true
+if $search == true
 	#pkgArray内を検索して一致するものを出力し終了
 	for i in pkgArray
 		puts i if i.include?($keyword)
