@@ -102,7 +102,7 @@ if !!$unlink
 
   #ファイルの削除を行う
   for delete_file_name in pkg_file_path
-    FileUtils.remove( pkg_path + delete_file_name , {:noop => !!$noop} )
+    FileUtils.remove(pkg_path + delete_file_name, noop: !!$noop)
     puts "delete #{pkg_path + delete_file_name}" unless !!$quiet
     file_deleted += 1
   end
@@ -110,7 +110,7 @@ if !!$unlink
   #ディレクトリの削除を行う(空ディレクトリのみ)
   for delete_dir_name in pkg_dir_path
     begin
-      FileUtils.rmdir( pkg_path + delete_dir_name , {:noop => !!$noop} )
+      FileUtils.rmdir(pkg_path + delete_dir_name, noop: !!$noop)
       puts "delete #{pkg_path + delete_dir_name}" unless !!$quiet
       dir_deleted += 1
 
