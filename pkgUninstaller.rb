@@ -30,24 +30,24 @@ $noop = false
 $quiet = false
 
 OptionParser.new do |parser|
-	#引数で受け取ったpkgIDを格納
-	parser.on("-u" , "--unlink PKGID" , "Unlink PKGID."){|v| $pkgid = v; $unlink = true }
+  #引数で受け取ったpkgIDを格納
+  parser.on("-u" , "--unlink PKGID" , "Unlink PKGID."){|v| $pkgid = v; $unlink = true }
 
-	#引数で受け取ったキーワードを格納
-	parser.on("-s" , "--search KEYWORD" , "Search pkg."){|v| $keyword = v; $search = true }
+  #引数で受け取ったキーワードを格納
+  parser.on("-s" , "--search KEYWORD" , "Search pkg."){|v| $keyword = v; $search = true }
 
-	#no operationフラグを立てる
-	parser.on("-n" , "--noop" , "No operation mode."){|v| $noop = v }
+  #no operationフラグを立てる
+  parser.on("-n" , "--noop" , "No operation mode."){|v| $noop = v }
 
-	#quietフラグを立てる
-	parser.on("-q" , "--quiet" , "Quiet mode."){|v| $quiet = v }
+  #quietフラグを立てる
+  parser.on("-q" , "--quiet" , "Quiet mode."){|v| $quiet = v }
 
-	#コマンド一覧を出力して終了
-	#parser.on("-h" , "--help" , "Show this message."){puts parser; exit}
+  #コマンド一覧を出力して終了
+  #parser.on("-h" , "--help" , "Show this message."){puts parser; exit}
 
-	begin
-		parser.parse!(ARGV)
-	end
+  begin
+    parser.parse!(ARGV)
+  end
 end
 
 ###下準備###
@@ -64,93 +64,92 @@ pkgArray = pkgs.to_s.split("\n")
 
 ###削除###
 if $unlink == true
-	#そもそも引数で受け取ったパッケージが存在するか否か
-	pkg_existence = false
+  #そもそも引数で受け取ったパッケージが存在するか否か
+  pkg_existence = false
 
-	for i in pkgArray
-		pkg_existence = i.eql?($pkgid)
-		break if pkg_existence
-	end
+  for i in pkgArray
+    pkg_existence = i.eql?($pkgid)
+    break if pkg_existence
+  end
 
-	#パッケージが存在しない場合はその旨を表示し終了
-	if pkg_existence == false
-		puts "package-id is wrong.\nexit this program."
-		exit
-	end
+  #パッケージが存在しない場合はその旨を表示し終了
+  if pkg_existence == false
+    puts "package-id is wrong.\nexit this program."
+    exit
+  end
 
-	#インストールされているファイル群の絶対パスを取得し、行ごとの配列にする
-	pkg_info = sh.system("pkgutil" , "--pkg-info" , "#{$pkgid}").to_s.split("\n")
-	sh.check_point()
-	
-	#削除対象となるパスを抽出
-	pkg_info[2]["volume: "] = ""
-	pkg_info[3]["location: "] = ""
-	unless pkg_info[3].eql?("")
-		pkg_info[3] = pkg_info[3] + "/"
-	end
-	pkg_path = pkg_info[2] + pkg_info[3]
-	
-	#インストールされたファイル、ディレクトリを取得し、深さ(文字数)で降順ソート	
-	pkg_file_path = sh.system("pkgutil","--only-files","--files","#{$pkgid}").to_s.split("\n")
-	sh.check_point()
-	pkg_file_path.sort!{|a,b| b.size <=> a.size}
-	#puts pkg_file_path
+  #インストールされているファイル群の絶対パスを取得し、行ごとの配列にする
+  pkg_info = sh.system("pkgutil" , "--pkg-info" , "#{$pkgid}").to_s.split("\n")
+  sh.check_point()
 
-	pkg_dir_path = sh.system("pkgutil","--only-dirs","--files","#{$pkgid}").to_s.split("\n")
-	sh.check_point()
-	pkg_dir_path.sort!{|a,b| b.size <=> a.size}
-	#puts pkg_dir_path
+  #削除対象となるパスを抽出
+  pkg_info[2]["volume: "] = ""
+  pkg_info[3]["location: "] = ""
+  unless pkg_info[3].eql?("")
+    pkg_info[3] = pkg_info[3] + "/"
+  end
+  pkg_path = pkg_info[2] + pkg_info[3]
 
-	#削除数カウント
-	file_deleted = 0
-	dir_deleted = 0
+  #インストールされたファイル、ディレクトリを取得し、深さ(文字数)で降順ソート	
+  pkg_file_path = sh.system("pkgutil","--only-files","--files","#{$pkgid}").to_s.split("\n")
+  sh.check_point()
+  pkg_file_path.sort!{|a,b| b.size <=> a.size}
+  #puts pkg_file_path
 
-	#ファイルの削除を行う
-	for delete_file_name in pkg_file_path
-		FileUtils.remove( pkg_path + delete_file_name , {:noop => $noop} )
-		puts "delete #{pkg_path + delete_file_name}" unless $quiet
-		file_deleted += 1
-	end
+  pkg_dir_path = sh.system("pkgutil","--only-dirs","--files","#{$pkgid}").to_s.split("\n")
+  sh.check_point()
+  pkg_dir_path.sort!{|a,b| b.size <=> a.size}
+  #puts pkg_dir_path
 
-	#ディレクトリの削除を行う(空ディレクトリのみ)
-	for delete_dir_name in pkg_dir_path
-		begin
-			FileUtils.rmdir( pkg_path + delete_dir_name , {:noop => $noop} )
-			puts "delete #{pkg_path + delete_dir_name}" unless $quiet
-			dir_deleted += 1
-			
-			if Dir.entries(pkg_path + delete_dir_name).size > 2
-				#noopが指定されているときはErrono::ENOTEMPTYが呼び出されないため空かどうかがわからない
-				puts "#{pkg_path + delete_dir_name} is not empty." unless $quiet
-			end
+  #削除数カウント
+  file_deleted = 0
+  dir_deleted = 0
 
-		rescue Errno::ENOTEMPTY => e
-			#空でないディレクトリは削除しない
-			#puts "#{pkg_path + delete_dir_name} is not empty."
-			dir_deleted -= 1
+  #ファイルの削除を行う
+  for delete_file_name in pkg_file_path
+    FileUtils.remove( pkg_path + delete_file_name , {:noop => $noop} )
+    puts "delete #{pkg_path + delete_file_name}" unless $quiet
+    file_deleted += 1
+  end
 
-		rescue Errno::ENOENT => e
-			#ディレクトリが存在しない
-			puts "#{pkg_path + delete_dir_name} is not existence."
-			dir_deleted -= 1
+  #ディレクトリの削除を行う(空ディレクトリのみ)
+  for delete_dir_name in pkg_dir_path
+    begin
+      FileUtils.rmdir( pkg_path + delete_dir_name , {:noop => $noop} )
+      puts "delete #{pkg_path + delete_dir_name}" unless $quiet
+      dir_deleted += 1
 
-		end
-	end
+      if Dir.entries(pkg_path + delete_dir_name).size > 2
+        #noopが指定されているときはErrono::ENOTEMPTYが呼び出されないため空かどうかがわからない
+        puts "#{pkg_path + delete_dir_name} is not empty." unless $quiet
+      end
 
-	#pkgの情報を削除
-	unless $noop
-		sh.system("pkgutil","--forget","#{$pkgid}")
-		sh.check_point()
-	end
+    rescue Errno::ENOTEMPTY => e
+      #空でないディレクトリは削除しない
+      #puts "#{pkg_path + delete_dir_name} is not empty."
+      dir_deleted -= 1
 
-	puts "#{file_deleted} files and #{dir_deleted} directories deleted."
+    rescue Errno::ENOENT => e
+      #ディレクトリが存在しない
+      puts "#{pkg_path + delete_dir_name} is not existence."
+      dir_deleted -= 1
+    end
+  end
+
+  #pkgの情報を削除
+  unless $noop
+    sh.system("pkgutil","--forget","#{$pkgid}")
+    sh.check_point()
+  end
+
+  puts "#{file_deleted} files and #{dir_deleted} directories deleted."
 
 end
 
 ###検索###
 if $search == true
-	#pkgArray内を検索して一致するものを出力し終了
-	for i in pkgArray
-		puts i if i.include?($keyword)
-	end
+  #pkgArray内を検索して一致するものを出力し終了
+  for i in pkgArray
+    puts i if i.include?($keyword)
+  end
 end
