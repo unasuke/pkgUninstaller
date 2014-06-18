@@ -86,7 +86,7 @@ if $unlink == true
   end
   pkg_path = pkg_info[2] + pkg_info[3]
 
-  #インストールされたファイル、ディレクトリを取得し、深さ(文字数)で降順ソート	
+  #インストールされたファイル、ディレクトリを取得し、深さ(文字数)で降順ソート
   pkg_file_path = sh.system("pkgutil","--only-files","--files","#{$pkgid}").to_s.split("\n")
   sh.check_point()
   pkg_file_path.sort!{|a,b| b.size <=> a.size}
