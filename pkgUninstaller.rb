@@ -62,10 +62,7 @@ if !!$unlink
   #そもそも引数で受け取ったパッケージが存在するか否か
   pkg_existence = false
 
-  for i in pkgArray
-    pkg_existence = i.eql?($pkgid)
-    break if pkg_existence
-  end
+  pkg_existence = pkgArray.include?($pkgid)
 
   #パッケージが存在しない場合はその旨を表示し終了
   unless !!pkg_existence
@@ -144,7 +141,7 @@ end
 ###検索###
 if !!$search
   #pkgArray内を検索して一致するものを出力し終了
-  for i in pkgArray
-    puts i if i.include?($keyword)
+  pkgArray.each do |pkg|
+    puts pkg if pkg.include?($keyword)
   end
 end
