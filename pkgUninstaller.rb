@@ -25,10 +25,6 @@ require "shell"
 # -q , --quiet 削除されたファイルとディレクトリの数のみ出力
 # -h , --help コマンド一覧を出力する。引数が空の場合も出力する
 
-#フラグ用(ここで書かないとあとでnil)
-$noop = false
-$quiet = false
-
 OptionParser.new do |parser|
   #引数で受け取ったpkgIDを格納
   parser.on("-u" , "--unlink PKGID" , "Unlink PKGID."){|v| $pkgid = v; $unlink = true }
@@ -107,21 +103,21 @@ if $unlink == true
 
   #ファイルの削除を行う
   for delete_file_name in pkg_file_path
-    FileUtils.remove( pkg_path + delete_file_name , {:noop => $noop} )
-    puts "delete #{pkg_path + delete_file_name}" unless $quiet
+    FileUtils.remove( pkg_path + delete_file_name , {:noop => !!$noop} )
+    puts "delete #{pkg_path + delete_file_name}" unless !!$quiet
     file_deleted += 1
   end
 
   #ディレクトリの削除を行う(空ディレクトリのみ)
   for delete_dir_name in pkg_dir_path
     begin
-      FileUtils.rmdir( pkg_path + delete_dir_name , {:noop => $noop} )
-      puts "delete #{pkg_path + delete_dir_name}" unless $quiet
+      FileUtils.rmdir( pkg_path + delete_dir_name , {:noop => !!$noop} )
+      puts "delete #{pkg_path + delete_dir_name}" unless !!$quiet
       dir_deleted += 1
 
       if Dir.entries(pkg_path + delete_dir_name).size > 2
         #noopが指定されているときはErrono::ENOTEMPTYが呼び出されないため空かどうかがわからない
-        puts "#{pkg_path + delete_dir_name} is not empty." unless $quiet
+        puts "#{pkg_path + delete_dir_name} is not empty." unless !!$quiet
       end
 
     rescue Errno::ENOTEMPTY => e
@@ -137,7 +133,7 @@ if $unlink == true
   end
 
   #pkgの情報を削除
-  unless $noop
+  unless !!$noop
     sh.system("pkgutil","--forget","#{$pkgid}")
     sh.check_point()
   end
