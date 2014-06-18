@@ -57,9 +57,8 @@ pkgs = sh.system("pkgutil" , "--pkgs")
 #改行ごとに区切り配列に格納し直す
 pkgArray = pkgs.to_s.split("\n")
 
-
 ###削除###
-if $unlink == true
+if !!$unlink
   #そもそも引数で受け取ったパッケージが存在するか否か
   pkg_existence = false
 
@@ -69,13 +68,13 @@ if $unlink == true
   end
 
   #パッケージが存在しない場合はその旨を表示し終了
-  if pkg_existence == false
+  unless !!pkg_existence
     puts "package-id is wrong.\nexit this program."
     exit
   end
 
   #インストールされているファイル群の絶対パスを取得し、行ごとの配列にする
-  pkg_info = sh.system("pkgutil" , "--pkg-info" , "#{$pkgid}").to_s.split("\n")
+  pkg_info = sh.system("pkgutil", "--pkg-info", $pkgid).to_s.split("\n")
   sh.check_point()
 
   #削除対象となるパスを抽出
@@ -87,12 +86,12 @@ if $unlink == true
   pkg_path = pkg_info[2] + pkg_info[3]
 
   #インストールされたファイル、ディレクトリを取得し、深さ(文字数)で降順ソート
-  pkg_file_path = sh.system("pkgutil","--only-files","--files","#{$pkgid}").to_s.split("\n")
+  pkg_file_path = sh.system("pkgutil", "--only-files", "--files", $pkgid).to_s.split("\n")
   sh.check_point()
   pkg_file_path.sort!{|a,b| b.size <=> a.size}
   #puts pkg_file_path
 
-  pkg_dir_path = sh.system("pkgutil","--only-dirs","--files","#{$pkgid}").to_s.split("\n")
+  pkg_dir_path = sh.system("pkgutil", "--only-dirs", "--files", $pkgid).to_s.split("\n")
   sh.check_point()
   pkg_dir_path.sort!{|a,b| b.size <=> a.size}
   #puts pkg_dir_path
@@ -134,7 +133,7 @@ if $unlink == true
 
   #pkgの情報を削除
   unless !!$noop
-    sh.system("pkgutil","--forget","#{$pkgid}")
+    sh.system("pkgutil", "--forget", $pkgid)
     sh.check_point()
   end
 
@@ -143,7 +142,7 @@ if $unlink == true
 end
 
 ###検索###
-if $search == true
+if !!$search
   #pkgArray内を検索して一致するものを出力し終了
   for i in pkgArray
     puts i if i.include?($keyword)
