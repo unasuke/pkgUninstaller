@@ -113,7 +113,7 @@ if !!$unlink
 
       if Dir.entries(pkg_path + delete_dir_name).size > 2
         #noopが指定されているときはErrono::ENOTEMPTYが呼び出されないため空かどうかがわからない
-        puts "#{pkg_path + delete_dir_name} is not empty." unless !!$quiet
+        warn "#{pkg_path + delete_dir_name} is not empty." unless !!$quiet
       end
 
     rescue Errno::ENOTEMPTY => e
@@ -123,7 +123,7 @@ if !!$unlink
 
     rescue Errno::ENOENT => e
       #ディレクトリが存在しない
-      puts "#{pkg_path + delete_dir_name} is not existence."
+      warn "#{pkg_path + delete_dir_name} is not existence."
       dir_deleted -= 1
     end
   end
